@@ -2,236 +2,108 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>校園失物協尋平台 - 首頁</title>
+    <title>簡易五子棋遊戲</title>
     <style>
-        /* 基礎色彩設定：色彩不要太花，以清爽的藍色系為主 */
-        :root {
-            --primary: #3B82F6; /* 校園風格的清爽藍色 */
-            --primary-hover: #2563EB;
-            --bg: #F8FAFC;     /* 柔和的淺灰背景 */
-            --surface: #FFFFFF;
-            --text-main: #1E293B; /* 深灰文字，易閱讀 */
-            --text-muted: #64748B;
-            --border: #E2E8F0;
-            --radius: 12px;
-            --status-active: #10B981; /* 綠色：尋找中 */
-            --status-closed: #94A3B8;  /* 灰色：已結案 */
+        body { text-align: center; font-family: sans-serif; background-color: #f0f0f0; }
+        h1 { color: #333; }
+        #board { 
+            display: grid; 
+            grid-template-columns: repeat(15, 30px); 
+            grid-template-rows: repeat(15, 30px); 
+            gap: 1px; 
+            background-color: #d18b47; 
+            padding: 10px; 
+            border: 2px solid #8b5a2b;
+            margin: 20px auto;
+            width: fit-content;
         }
-        
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; }
-        body { background-color: var(--bg); color: var(--text-main); line-height: 1.5; padding-bottom: 80px; }
-        
-        /* 佈局：適合手機瀏覽的最大寬度 */
-        .container { max-width: 500px; margin: 0 auto; padding: 16px; }
-        
-        /* Header */
-        header { text-align: center; padding: 16px 0 24px; }
-        header h1 { font-size: 22px; color: var(--text-main); font-weight: 700; }
-        header p { font-size: 14px; color: var(--text-muted); margin-top: 4px; }
-        
-        /* 搜尋區塊要明顯：置頂並加上陰影 */
-        .search-container { margin-bottom: 16px; position: sticky; top: 0; background: var(--bg); padding: 10px 0; z-index: 10; }
-        .search-input { width: 100%; padding: 14px 16px; font-size: 16px; border: 2px solid var(--border); border-radius: var(--radius); outline: none; transition: all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
-        .search-input:focus { border-color: var(--primary); box-shadow: 0 4px 6px rgba(59, 130, 246, 0.1); }
-        
-        /* 標籤分類：可橫向滑動 */
-        .tags-container { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 12px; margin-bottom: 12px; scrollbar-width: none; }
-        .tags-container::-webkit-scrollbar { display: none; }
-        .tag { padding: 8px 16px; background: var(--surface); border: 1px solid var(--border); border-radius: 20px; font-size: 14px; white-space: nowrap; cursor: pointer; transition: all 0.2s; color: var(--text-muted); font-weight: 500; }
-        .tag.active { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        /* 卡片列表：簡潔清楚的閱讀排版 */
-        .card-list { display: flex; flex-direction: column; gap: 16px; }
-        .card { background: var(--surface); border-radius: var(--radius); overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: 1px solid var(--border); }
-        /* 用emoji當作圖片展現 */
-        .card-img-placeholder { height: 140px; background: linear-gradient(135deg, #EFF6FF, #DBEAFE); display: flex; align-items: center; justify-content: center; font-size: 48px; }
-        .card-content { padding: 16px; }
-        
-        .card-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; }
-        .card-title { font-size: 18px; font-weight: bold; line-height: 1.3; }
-        .status-badge { padding: 4px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; color: white; border: none; }
-        .status-active { background: var(--status-active); }
-        .status-closed { background: var(--status-closed); }
-        
-        .card-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 12px; display: flex; flex-wrap: wrap; gap: 8px; }
-        .card-meta span { background: var(--bg); padding: 2px 6px; border-radius: 4px; }
-        .card-desc { font-size: 15px; margin-bottom: 16px; color: #334155; }
-        
-        /* 動作按鈕：清楚可見 */
-        .card-actions { display: flex; gap: 12px; border-top: 1px solid var(--border); padding-top: 16px; }
-        .btn { flex: 1; padding: 12px; text-align: center; border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; transition: opacity 0.2s; }
-        .btn:active { opacity: 0.8; transform: scale(0.98); }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-outline { background: transparent; border: 1px solid var(--text-muted); color: var(--text-muted); }
-        .btn-disabled { opacity: 0.5; background: #E2E8F0; color: #64748B; cursor: not-allowed; }
-        
-        /* 懸浮刊登按鈕 (FAB) */
-        .fab { position: fixed; bottom: 24px; right: calc(50% - 220px); width: 60px; height: 60px; border-radius: 30px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4); border: none; cursor: pointer; z-index: 20; transition: transform 0.2s; }
-        .fab:active { transform: scale(0.95); }
-        @media (max-width: 500px) { .fab { right: 24px; } }
-        
-        /* 查無資料 */
-        .empty-state { text-align: center; padding: 40px 20px; color: var(--text-muted); display: none; }
-        .empty-state div { font-size: 48px; margin-bottom: 16px; }
+        .cell { 
+            width: 30px; height: 30px; 
+            background-color: #ffce9e; 
+            border: 0.5px solid #d18b47; 
+            cursor: pointer;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .black { width: 24px; height: 24px; background: black; border-radius: 50%; }
+        .white { width: 24px; height: 24px; background: white; border-radius: 50%; border: 1px solid #ccc; }
+        #status { font-size: 1.2em; font-weight: bold; margin-bottom: 10px; }
+        button { padding: 10px 20px; cursor: pointer; font-size: 1em; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <header>
-        <h1>🔍 校園失物暨書籍交流</h1>
-        <p>為大學生打造的專屬尋物平台</p>
-    </header>
+    <h1>五子棋遊戲</h1>
+    <div id="status">輪到：黑棋</div>
+    <div id="board"></div>
+    <br>
+    <button onclick="resetGame()">重新開始</button>
 
-    <!-- 關鍵字搜尋：搜尋區塊明顯，輸入框夠大 -->
-    <div class="search-container">
-        <input type="text" id="searchInput" class="search-input" placeholder="試著搜尋失物或書名 (例如: 微積分)...">
-    </div>
+    <script>
+        const size = 15;
+        let boardData = Array(size).fill().map(() => Array(size).fill(null));
+        let isBlackNext = true;
+        let gameOver = false;
+        const boardElement = document.getElementById('board');
+        const statusElement = document.getElementById('status');
 
-    <!-- 標籤分類：橫向滑動排版 -->
-    <div class="tags-container" id="tagsContainer">
-        <div class="tag active" data-cat="全部">🌈 全部</div>
-        <div class="tag" data-cat="電子產品">📱 電子產品</div>
-        <div class="tag" data-cat="二手書">📚 二手書</div>
-        <div class="tag" data-cat="文具">✏️ 文具</div>
-        <div class="tag" data-cat="水壺">🚰 水壺</div>
-        <div class="tag" data-cat="雨傘衣物">☔ 雨傘衣物</div>
-    </div>
-
-    <!-- 列表資料 -->
-    <div class="card-list" id="cardList">
-        <!-- 卡片會由 JavaScript 渲染產生 -->
-    </div>
-    
-    <div class="empty-state" id="emptyState">
-        <div>👀</div>
-        目前沒有符合條件的項目
-    </div>
-</div>
-
-<!-- 模擬刊登按鈕 -->
-<button class="fab" onclick="alert('這裡會跳出刊登表單！\n\n使用者可以填寫：\n1. 物品照片\n2. 分類標籤\n3. 遺失/發現地點\n4. 詳盡描述')" aria-label="刊登物品">+</button>
-
-<script>
-    // 建立平台初始模擬資料 (Mock Data)
-    const mockData = [
-        { id: 1, title: 'iPad Air 5 藍色', category: '電子產品', status: 'active', date: '3小時前', location: '圖書館 3F', desc: '有裝黑色保護殼，螢幕右上角有一點破裂。如果有撿到請馬上聯絡我，裡面有期中考筆記！', icon: '📱' },
-        { id: 2, title: '微積分原文書 (Calculus 9th)', category: '二手書', status: 'active', date: '昨天 14:00', location: '共同教室 204', desc: '9成新，裡面有稍微畫線，便宜賣500，圖文部購入。非常適合資工系大一。', icon: '📘' },
-        { id: 3, title: '無印良品透明水壺', category: '水壺', status: 'active', date: '今天 08:15', location: '體育館', desc: '裡面還有半瓶水，遺落在籃球場旁邊的椅子上。', icon: '🚰' },
-        { id: 4, title: '黑色折疊傘', category: '雨傘衣物', status: 'closed', date: '上週五', location: '學餐門口', desc: '手把是木頭材質，目前已經送交給學務處失物招領中心。', icon: '☔' },
-        { id: 5, title: 'AirPods Pro 右耳', category: '電子產品', status: 'active', date: '兩天前', location: '操場', desc: '在操場跑步時掉的，對我很重要希望能找回😭', icon: '🎧' },
-        { id: 6, title: '工程數學筆記本', category: '文具', status: 'closed', date: '11/05', location: '工學院 101', desc: '封面有寫資工系林大明。', icon: '📓' }
-    ];
-
-    let currentCategory = '全部';
-    let searchQuery = '';
-
-    const cardList = document.getElementById('cardList');
-    const searchInput = document.getElementById('searchInput');
-    const tags = document.querySelectorAll('.tag');
-    const emptyState = document.getElementById('emptyState');
-
-    // 渲染卡片頁面的魔法函數
-    function renderCards() {
-        cardList.innerHTML = ''; // 清空現有卡片
-        
-        // 核心邏輯：篩選標籤與關鍵字
-        const filteredData = mockData.filter(item => {
-            const matchCategory = currentCategory === '全部' || item.category === currentCategory;
-            const keyword = searchQuery.toLowerCase();
-            const matchSearch = item.title.toLowerCase().includes(keyword) || 
-                                item.desc.toLowerCase().includes(keyword) ||
-                                item.location.toLowerCase().includes(keyword);
-            
-            // 如果希望前台只看得到「尋找中」，可以加上這行。
-            // 但為了展示原型，我們先開放顯示「已結案」讓大家看狀態差異
-            return matchCategory && matchSearch;
-        });
-
-        // 顯示無資料狀態
-        if (filteredData.length === 0) {
-            emptyState.style.display = 'block';
-        } else {
-            emptyState.style.display = 'none';
-        }
-
-        // 把篩選後的資料畫上畫面
-        filteredData.forEach(item => {
-            const isActive = item.status === 'active';
-            const statusText = isActive ? '✅ 尋找中' : '結案下架';
-            const statusClass = isActive ? 'status-active' : 'status-closed';
-            const actionText = isActive ? '結案此貼文' : '重新開啟';
-
-            const card = document.createElement('div');
-            card.className = 'card';
-            card.innerHTML = `
-                <!-- 圖片佔位符：模擬實際照片 -->
-                <div class="card-img-placeholder" style="${isActive ? '' : 'filter: grayscale(1); opacity: 0.5;'}">${item.icon}</div>
-                <div class="card-content">
-                    <div class="card-header">
-                        <div class="card-title" style="${isActive ? '' : 'text-decoration: line-through; color: #94A3B8;'}">${item.title}</div>
-                        <div class="status-badge ${statusClass}">${statusText}</div>
-                    </div>
-                    <div class="card-meta">
-                        <span>📁 ${item.category}</span>
-                        <span>📍 ${item.location}</span>
-                        <span>🕒 ${item.date}</span>
-                    </div>
-                    <div class="card-desc">${item.desc}</div>
-                    
-                    <div class="card-actions">
-                        <!-- 聯絡按鈕 -->
-                        ${isActive 
-                            ? `<button class="btn btn-primary" onclick="alert('這裡會開啟 LINE 傳訊或 Email 給刊登者。\\n\\n防詐安全機制：寄件人必須是 edu.tw 信箱才能點擊。')">💬 聯絡賣家/失主</button>` 
-                            : `<button class="btn btn-disabled" disabled>已關閉聯絡</button>`
-                        }
-                        <!-- 狀態追蹤結案按鈕 -->
-                        <button class="btn btn-outline" onclick="toggleStatus(${item.id})">${actionText}</button>
-                    </div>
-                </div>
-            `;
-            cardList.appendChild(card);
-        });
-    }
-
-    // 模擬結案機制的點擊事件
-    window.toggleStatus = function(id) {
-        const item = mockData.find(d => d.id === id);
-        if (item) {
-            if (item.status === 'active') {
-                if(confirm('確定物品已經找回或售出，要將這篇貼文標示為「已結案」嗎？\n\n(提示：結案後將會無法聯絡刊登者)')) {
-                    item.status = 'closed';
+        function createBoard() {
+            boardElement.innerHTML = '';
+            for (let r = 0; r < size; r++) {
+                for (let c = 0; c < size; c++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.onclick = () => placePiece(r, c);
+                    boardElement.appendChild(cell);
                 }
-            } else {
-                item.status = 'active';
             }
-            // 重新刷新畫面
-            renderCards();
         }
-    }
 
-    // 按下鍵盤搜尋時，觸發篩選
-    searchInput.addEventListener('input', (e) => {
-        searchQuery = e.target.value;
-        renderCards();
-    });
+        function placePiece(r, c) {
+            if (boardData[r][c] || gameOver) return;
 
-    // 點擊分類標籤時，觸發篩選
-    tags.forEach(tag => {
-        tag.addEventListener('click', () => {
-            // 切換「按下」外觀
-            tags.forEach(t => t.classList.remove('active'));
-            tag.classList.add('active');
+            const currentPlayer = isBlackNext ? 'black' : 'white';
+            boardData[r][c] = currentPlayer;
             
-            // 更新要篩選的分類條件
-            currentCategory = tag.getAttribute('data-cat');
-            renderCards();
-        });
-    });
+            const cellIndex = r * size + c;
+            const piece = document.createElement('div');
+            piece.className = currentPlayer;
+            boardElement.children[cellIndex].appendChild(piece);
 
-    // 網頁載入時印出第一波卡片
-    renderCards();
-</script>
+            if (checkWin(r, c, currentPlayer)) {
+                statusElement.innerText = `獲勝者：${isBlackNext ? '黑棋' : '白棋'}！`;
+                gameOver = true;
+                return;
+            }
+
+            isBlackNext = !isBlackNext;
+            statusElement.innerText = `輪到：${isBlackNext ? '黑棋' : '白棋'}`;
+        }
+
+        function checkWin(r, c, p) {
+            const directions = [[1,0], [0,1], [1,1], [1,-1]];
+            return directions.some(([dr, dc]) => {
+                let count = 1;
+                for (let i = 1; i < 5; i++) {
+                    if (boardData[r + dr * i]?.[c + dc * i] === p) count++;
+                    else break;
+                }
+                for (let i = 1; i < 5; i++) {
+                    if (boardData[r - dr * i]?.[c - dc * i] === p) count++;
+                    else break;
+                }
+                return count >= 5;
+            });
+        }
+
+        function resetGame() {
+            boardData = Array(size).fill().map(() => Array(size).fill(null));
+            isBlackNext = true;
+            gameOver = false;
+            statusElement.innerText = "輪到：黑棋";
+            createBoard();
+        }
+
+        createBoard();
+    </script>
 </body>
 </html>
